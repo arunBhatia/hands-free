@@ -1,0 +1,32 @@
+{
+  "name": "hands-free",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Gesture-controlled three.js demo — scroll and zoom a website with your hands",
+  "scripts": {
+    "predev": "node scripts/fetch-assets.mjs",
+    "dev": "vite",
+    "prebuild": "node scripts/fetch-assets.mjs",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@mediapipe/tasks-vision": "1.0.1",
+    "@react-three/fiber": "9.7.0",
+    "@react-three/postprocessing": "3.1.1",
+    "postprocessing": "6.39.5",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "three": "0.186.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.7",
+    "@types/three": "0.186.0",
+    "@vitejs/plugin-react": "6.1.1",
+    "typescript": "5.9.3",
+    "vite": "8.3.0"
+  }
+}

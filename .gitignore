@@ -1,0 +1,10 @@
+node_modules
+dist
+.vercel
+.DS_Store
+*.local
+
+# Fetched at predev/prebuild by scripts/fetch-assets.mjs — kept out of git so the
+# 8.4 MB model and the wasm blobs don't bloat the repo.
+public/models/
+public/mediapipe/
