@@ -121,9 +121,9 @@ export const OBSTACLES: readonly ObstacleSpec[] = [
     yPos: [100, 75, 50],
     multipleSpeed: 999,
     minGap: 150,
-    // Chrome uses 8.5, which in slow mode (top speed 9) would hold birds back for over
-    // two minutes. 6 sits at the same fraction of the slow-mode speed range.
-    minSpeed: 6,
+    // Chrome holds birds back until 8.5. Here they come from the start, so the
+    // duck gesture is part of play from the first run, not only after a long one.
+    minSpeed: 0,
     speedOffset: 0.8,
   },
 ]

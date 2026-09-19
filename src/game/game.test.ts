@@ -9,7 +9,7 @@ import {
   STEP_MS,
   TREX,
 } from './constants'
-import { Obstacle } from './obstacles'
+import { Obstacle, ObstacleField } from './obstacles'
 import { Runner, type GameInput } from './runner'
 import { Trex } from './trex'
 
@@ -113,6 +113,19 @@ describe('collision', () => {
     expect(hits(ducking, middle)).toBe(false)
     // High: just keep running.
     expect(hits(running, high)).toBe(false)
+  })
+
+  it('sends duck-height birds from the starting speed', () => {
+    let seed = 1
+    const rng = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646
+    const field = new ObstacleField(rng)
+    const middle = spec('pterodactyl').yPos[1]
+    const seen = new Set<string>()
+    for (let i = 0; i < 60 * 60; i++) {
+      field.step(START_SPEED, STEP_MS, true)
+      for (const o of field.obstacles) seen.add(`${o.spec.type}@${o.y}`)
+    }
+    expect(seen.has(`pterodactyl@${middle}`)).toBe(true)
   })
 })
 
