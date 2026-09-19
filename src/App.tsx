@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from 'react'
+import { useEffect, useMemo, useRef, useSyncExternalStore } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Bloom, EffectComposer, Vignette } from '@react-three/postprocessing'
 import { AdditiveBlending, Color, InstancedMesh, MathUtils, Object3D, Vector3 } from 'three'
-import { HAND_CONNECTIONS } from './cv/landmarks'
-import { ingest, jumpToNextSection, jumpToPreviousSection, updateControl } from './cv/gestures'
-import { createRecogniser, openCamera, startInferenceLoop, type Recogniser } from './cv/recognizer'
+import { CameraLayer } from './components/CameraLayer'
+import { jumpToNextSection, jumpToPreviousSection, updateControl } from './cv/gestures'
+import { useHandTracking } from './cv/useHandTracking'
 import { frame, getUi, setUi, subscribeUi, type ControlMode, type UiState } from './state/store'
 
 const sections = [
@@ -219,63 +219,6 @@ function MotionRuntime({ contentRef }: { contentRef: React.RefObject<HTMLDivElem
   return null
 }
 
-function CameraLayer({ videoRef }: { videoRef: React.RefObject<HTMLVideoElement | null> }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-
-  useEffect(() => {
-    let raf = 0
-    const draw = () => {
-      const canvas = canvasRef.current
-      const video = videoRef.current
-      const ctx = canvas?.getContext('2d')
-      if (canvas && video && ctx) {
-        const rect = canvas.getBoundingClientRect()
-        const dpr = window.devicePixelRatio || 1
-        const width = Math.round(rect.width * dpr)
-        const height = Math.round(rect.height * dpr)
-        if (canvas.width !== width || canvas.height !== height) {
-          canvas.width = width
-          canvas.height = height
-        }
-        ctx.save()
-        ctx.clearRect(0, 0, width, height)
-        ctx.scale(dpr, dpr)
-        ctx.translate(rect.width, 0)
-        ctx.scale(-1, 1)
-        if (video.readyState >= 2) ctx.drawImage(video, 0, 0, rect.width, rect.height)
-        ctx.lineWidth = 2
-        ctx.strokeStyle = 'rgba(111, 255, 204, 0.9)'
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.92)'
-        for (const hand of frame.hands) {
-          if (!hand.present || !hand.landmarks) continue
-          ctx.beginPath()
-          for (const [a, b] of HAND_CONNECTIONS) {
-            ctx.moveTo(hand.landmarks[a].x * rect.width, hand.landmarks[a].y * rect.height)
-            ctx.lineTo(hand.landmarks[b].x * rect.width, hand.landmarks[b].y * rect.height)
-          }
-          ctx.stroke()
-          for (const point of hand.landmarks) {
-            ctx.beginPath()
-            ctx.arc(point.x * rect.width, point.y * rect.height, 2.8, 0, Math.PI * 2)
-            ctx.fill()
-          }
-        }
-        ctx.restore()
-      }
-      raf = requestAnimationFrame(draw)
-    }
-    raf = requestAnimationFrame(draw)
-    return () => cancelAnimationFrame(raf)
-  }, [videoRef])
-
-  return (
-    <div className="camera">
-      <video ref={videoRef} playsInline muted />
-      <canvas ref={canvasRef} />
-    </div>
-  )
-}
-
 function ControlsPanel({ onStart, onStop }: { onStart: () => void; onStop: () => void }) {
   const ui = useUiStore()
   const canStart = ui.status === 'idle' || ui.status === 'error' || ui.status === 'unsupported'
@@ -314,6 +257,9 @@ function ControlsPanel({ onStart, onStop }: { onStart: () => void; onStop: () =>
         <span>fist</span>
         <b>stop</b>
       </div>
+      <a className="switch-link" href="#game">
+        Play T-Rex with your hands →
+      </a>
       {ui.error ? <p className="error">{ui.error}</p> : null}
     </aside>
   )
@@ -358,85 +304,7 @@ export default function App() {
   const ui = useUiStore()
   const videoRef = useRef<HTMLVideoElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
-  const cleanupRef = useRef<(() => void) | null>(null)
-  const recogniserRef = useRef<Recogniser | null>(null)
-  const sessionRef = useRef(0)
-
-  const stop = useCallback(() => {
-    sessionRef.current += 1
-    cleanupRef.current?.()
-    cleanupRef.current = null
-    recogniserRef.current = null
-    if (videoRef.current) videoRef.current.srcObject = null
-    frame.handCount = 0
-    frame.mode = 'idle'
-    frame.cursorStrength = 0
-    frame.cursorPinch = 0
-    for (const hand of frame.hands) {
-      hand.present = false
-      hand.landmarks = null
-    }
-    setUi({
-      status: 'idle',
-      error: null,
-      progress: 0,
-      delegate: '',
-      handCount: 0,
-      gesture: 'None',
-      mode: 'idle',
-      cvFps: 0,
-    })
-  }, [])
-
-  const start = useCallback(async () => {
-    if (!videoRef.current) return
-    if (!navigator.mediaDevices?.getUserMedia) {
-      setUi({ status: 'unsupported', error: 'This browser does not expose webcam access.' })
-      return
-    }
-
-    cleanupRef.current?.()
-    cleanupRef.current = null
-    const session = ++sessionRef.current
-    setUi({ status: 'requesting', error: null, progress: 0 })
-
-    try {
-      const stream = await openCamera(videoRef.current)
-      if (session !== sessionRef.current) {
-        stream.getTracks().forEach((track) => track.stop())
-        return
-      }
-      setUi({ status: 'loading' })
-      const recogniser = await createRecogniser((progress) => setUi({ progress }))
-      if (session !== sessionRef.current) {
-        stream.getTracks().forEach((track) => track.stop())
-        recogniser.recogniser.close()
-        return
-      }
-      recogniserRef.current = recogniser
-      cleanupRef.current = () => {
-        stream.getTracks().forEach((track) => track.stop())
-        recogniser.recogniser.close()
-      }
-      const stopLoop = startInferenceLoop(videoRef.current, recogniser.recogniser, ingest)
-      cleanupRef.current = () => {
-        stopLoop()
-        stream.getTracks().forEach((track) => track.stop())
-        recogniser.recogniser.close()
-      }
-      setUi({ status: 'running', delegate: recogniser.delegate, progress: 1 })
-    } catch (err) {
-      if (session !== sessionRef.current) return
-      cleanupRef.current?.()
-      cleanupRef.current = null
-      setUi({
-        status: 'error',
-        error: err instanceof Error ? err.message : 'Camera or model startup failed.',
-      })
-    }
-  }, [])
-
-  useEffect(() => () => stop(), [stop])
+  const { start, stop } = useHandTracking(videoRef)
 
   return (
     <>

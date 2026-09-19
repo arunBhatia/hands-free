@@ -63,3 +63,16 @@ export function palmCentre(lm: NormalizedLandmark[]): { x: number; y: number } {
   }
   return { x: x / ids.length, y: y / ids.length }
 }
+
+/**
+ * How far the middle fingertip reaches from the wrist, relative to the wrist-to-knuckle
+ * length. ~1.9 with the finger straight, ~1 curled into a fist.
+ *
+ * Used to tell a pinch from a fist: in a fist the thumb tip rests on the curled index
+ * finger, close enough to its tip that pinchRatio alone reads it as a pinch.
+ */
+export function middleExtension(lm: NormalizedLandmark[]): number {
+  const handSpan = dist2(lm[WRIST], lm[MIDDLE_MCP])
+  if (handSpan < 1e-5) return 0
+  return dist2(lm[WRIST], lm[MIDDLE_TIP]) / handSpan
+}

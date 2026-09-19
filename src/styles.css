@@ -318,6 +318,60 @@ h1 {
   opacity: 0;
 }
 
+.switch-link {
+  display: block;
+  margin-top: 16px;
+  color: #8fffe0;
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.switch-link:hover {
+  color: #c2fff0;
+}
+
+.panel-note {
+  margin: 14px 0 0;
+  color: rgba(243, 246, 239, 0.54);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.game {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  align-items: center;
+  padding: 0 380px 0 clamp(40px, 6vw, 96px);
+}
+
+.game-stage {
+  width: 100%;
+  max-width: 1080px;
+}
+
+.game-canvas {
+  width: 100%;
+  aspect-ratio: 4 / 1;
+  border: 1px solid rgba(243, 246, 239, 0.16);
+  border-radius: 8px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.36);
+}
+
+.game-debug {
+  min-height: 1.5em;
+  margin: 14px 0 0;
+  color: rgba(243, 246, 239, 0.74);
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  white-space: pre-wrap;
+}
+
+.game-debug.hidden {
+  visibility: hidden;
+}
+
 @media (max-width: 1023px) {
   html,
   body,
