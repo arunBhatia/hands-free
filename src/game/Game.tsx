@@ -39,7 +39,6 @@ function GameCanvas({ debugRef }: { debugRef: React.RefObject<HTMLPreElement | n
   useEffect(() => {
     const runner = new Runner(Math.random, loadHighScore())
     const input = new HandInput()
-    const detach = input.attach()
     let savedHigh = runner.highScore
     let raf = 0
     let last = performance.now()
@@ -82,8 +81,8 @@ function GameCanvas({ debugRef }: { debugRef: React.RefObject<HTMLPreElement | n
         const handsOn = getUi().status === 'running'
         draw(ctx, runner, {
           showHitboxes: getUi().showDebug,
-          startHint: handsOn ? 'pinch to start' : 'start the camera, or press space',
-          restartHint: handsOn ? 'pinch to restart' : 'press space to restart',
+          startHint: handsOn ? 'pinch to start' : 'start the camera to play',
+          restartHint: 'pinch to restart',
         })
       }
 
@@ -122,7 +121,6 @@ function GameCanvas({ debugRef }: { debugRef: React.RefObject<HTMLPreElement | n
 
     return () => {
       cancelAnimationFrame(raf)
-      detach()
       window.removeEventListener('keydown', onKey)
     }
   }, [debugRef])
@@ -165,8 +163,6 @@ function GamePanel({ onStart, onStop }: { onStart: () => void; onStop: () => voi
         <b>duck</b>
         <span>pinch after crash</span>
         <b>restart</b>
-        <span>keys</span>
-        <b>space / ↓</b>
       </div>
       <p className="panel-note">Pinch thumb to index with your other fingers straight, like an OK sign.</p>
       <a className="switch-link" href="#">

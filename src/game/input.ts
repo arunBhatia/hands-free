@@ -11,21 +11,8 @@ export interface InputDebug {
   guarded: number
 }
 
-const INTERACTIVE = 'button, a[href], input, textarea, select, summary, [contenteditable="true"]'
-
 /**
- * Whether the game should take this key. Space on a focused button or link belongs to
- * that control — otherwise a keyboard user could never press Start camera.
- */
-export function isGameKey(event: Pick<KeyboardEvent, 'code' | 'target'>): boolean {
-  const target = event.target as { closest?: (selector: string) => unknown } | null
-  const onControl = typeof target?.closest === 'function' && target.closest(INTERACTIVE) != null
-  if (event.code === 'Space') return !onControl
-  return event.code === 'ArrowUp' || event.code === 'ArrowDown'
-}
-
-/**
- * Hands (and a keyboard fallback) → one GameInput per animation frame.
+ * Hands → one GameInput per animation frame.
  *
  * Jump reads the pinch state straight from ingest(), which sets it from the raw pinch
  * ratio with hysteresis and no voting window — it is the lowest-latency signal we have.
@@ -34,40 +21,12 @@ export function isGameKey(event: Pick<KeyboardEvent, 'code' | 'target'>): boolea
 export class HandInput {
   private wasPinching = false
   private wasGuarded = false
-  private keyJump = false
-  private keyJumpPressed = false
-  private keyDuck = false
   readonly debug: InputDebug = {
     pinchRatio: 1,
     middleExtension: 0,
     pinching: false,
     fist: false,
     guarded: 0,
-  }
-
-  private readonly onKeyDown = (event: KeyboardEvent) => {
-    if (!isGameKey(event)) return
-    event.preventDefault()
-    if (event.code === 'ArrowDown') {
-      this.keyDuck = true
-    } else {
-      if (!event.repeat) this.keyJumpPressed = true
-      this.keyJump = true
-    }
-  }
-
-  private readonly onKeyUp = (event: KeyboardEvent) => {
-    if (event.code === 'Space' || event.code === 'ArrowUp') this.keyJump = false
-    else if (event.code === 'ArrowDown') this.keyDuck = false
-  }
-
-  attach(): () => void {
-    window.addEventListener('keydown', this.onKeyDown)
-    window.addEventListener('keyup', this.onKeyUp)
-    return () => {
-      window.removeEventListener('keydown', this.onKeyDown)
-      window.removeEventListener('keyup', this.onKeyUp)
-    }
   }
 
   poll(): GameInput {
@@ -92,11 +51,10 @@ export class HandInput {
     this.wasGuarded = guarded
 
     const input: GameInput = {
-      jumpPressed: pinchPressed || this.keyJumpPressed,
-      jumpHeld: pinching || this.keyJump,
-      duck: (fist && !pinching) || this.keyDuck,
+      jumpPressed: pinchPressed,
+      jumpHeld: pinching,
+      duck: fist && !pinching,
     }
-    this.keyJumpPressed = false
 
     this.debug.pinchRatio = closest.pinchRatio
     this.debug.middleExtension = closest.middleExtension

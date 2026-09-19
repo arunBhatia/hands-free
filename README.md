@@ -32,10 +32,10 @@ MediaPipe model (~8 MB) and copies its wasm runtime into `public/` (both gitigno
 
 Open it from the "Play T-Rex with your hands →" link in the control panel.
 
-| Gesture | Action | Keyboard       |
-| ------- | ------ | -------------- |
-| Pinch   | Jump   | Space / ↑      |
-| Fist    | Duck   | ↓              |
+| Gesture | Action |
+| ------- | ------ |
+| Pinch   | Jump   |
+| Fist    | Duck   |
 
 Birds fly at three heights. Jump the low ones, duck under the middle ones,
 and run under the high ones.
