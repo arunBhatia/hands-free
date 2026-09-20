@@ -25,7 +25,7 @@ export type GestureName =
   | 'ILoveYou'
 
 /** Which gesture currently owns the scroll/zoom value. */
-export type ControlMode = 'idle' | 'steer' | 'grab' | 'zoom' | 'brake' | 'pointer'
+export type ControlMode = 'idle' | 'grab' | 'zoom'
 
 export interface HandFrame {
   present: boolean
@@ -64,8 +64,6 @@ export const frame = {
   scroll: 0,
   /** Where scroll is heading. Gestures write here; the motion loop chases it. */
   scrollTarget: 0,
-  /** px/second, only used by rate-control steering. */
-  scrollVelocity: 0,
   maxScroll: 1,
 
   zoom: 1,

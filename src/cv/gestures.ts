@@ -28,17 +28,11 @@ const GESTURE_WINDOW = 5
 const GESTURE_QUORUM = 3
 const MIN_GESTURE_SCORE = 0.45
 
-/** Hand must be this far from frame centre before steering engages, as a fraction of height. */
-const STEER_DEADZONE = 0.09
-const STEER_MAX_SPEED = 2400 // px/second at full deflection
 /** Full-frame hand travel scrolls this many viewports in grab mode. */
 const GRAB_VIEWPORTS = 2.6
 
 const ZOOM_MIN = 0.55
 const ZOOM_MAX = 2.6
-
-/** Ignore repeat section jumps inside this window, so one V gesture fires once. */
-const JUMP_REFRACTORY_MS = 900
 
 class HandTracker {
   readonly filterX = new OneEuro()
@@ -86,8 +80,6 @@ let grabAnchorScroll = 0
 let zoomAnchorDistance = 0
 let zoomAnchorValue = 1
 let previousMode: ControlMode = 'idle'
-let lastJumpAt = -Infinity
-let victoryWasHeld = false
 
 let cvFrameCount = 0
 let cvWindowStart = 0
@@ -186,24 +178,19 @@ function distanceBetween(ax: number, ay: number, bx: number, by: number): number
 /**
  * State → scroll and zoom. Called once per animation frame.
  *
- * Priority order matters: pinches outrank open-palm steering, so the moment you close
- * your fingers mid-steer the page stops coasting and starts following your hand
- * one-to-one. Fist outranks everything except an active pinch — it is the stop button,
- * and on stage you want that to be unconditional.
+ * Two gestures, both relative to where the pinch started: one pinch drags the page,
+ * two pinches scale it. Everything else the recogniser can name is ignored here — the
+ * demo is easier to walk up to with one thing to learn per hand.
  */
 export function updateControl(dt: number, viewportHeight: number): void {
   const hands = frame.hands.filter((hand) => hand.present)
   frame.handCount = hands.length
 
   const pinching = hands.filter((hand) => hand.pinching)
-  const has = (name: GestureName) => hands.some((hand) => hand.gesture === name)
 
   let mode: ControlMode = 'idle'
   if (pinching.length >= 2) mode = 'zoom'
   else if (pinching.length === 1) mode = 'grab'
-  else if (has('Closed_Fist')) mode = 'brake'
-  else if (has('Open_Palm')) mode = 'steer'
-  else if (has('Pointing_Up')) mode = 'pointer'
 
   // The hand the 3D scene follows: whichever one is doing the work.
   const driver = pinching[0] ?? hands[0] ?? null
@@ -212,7 +199,6 @@ export function updateControl(dt: number, viewportHeight: number): void {
     if (mode === 'grab' && driver) {
       grabAnchorY = driver.y
       grabAnchorScroll = frame.scrollTarget
-      frame.scrollVelocity = 0
     }
     if (mode === 'zoom' && pinching.length >= 2) {
       zoomAnchorDistance = distanceBetween(
@@ -222,7 +208,6 @@ export function updateControl(dt: number, viewportHeight: number): void {
         pinching[1].y,
       )
       zoomAnchorValue = frame.zoomTarget
-      frame.scrollVelocity = 0
     }
     previousMode = mode
   }
@@ -251,50 +236,11 @@ export function updateControl(dt: number, viewportHeight: number): void {
       }
       break
     }
-    case 'steer': {
-      const hand = hands.find((h) => h.gesture === 'Open_Palm')!
-      const offset = 0.5 - hand.y
-      const magnitude = Math.abs(offset)
-      if (magnitude < STEER_DEADZONE) {
-        // Deadzone, otherwise a hand resting anywhere near centre drifts the page.
-        frame.scrollVelocity = approach(frame.scrollVelocity, 0, 5, dt)
-      } else {
-        const t = (magnitude - STEER_DEADZONE) / (0.5 - STEER_DEADZONE)
-        // Squared so small deflections give fine control and the top end is still fast.
-        const target = Math.sign(offset) * clamp(t * t, 0, 1) * STEER_MAX_SPEED
-        frame.scrollVelocity = approach(frame.scrollVelocity, target, 6, dt)
-      }
-      frame.scrollTarget += frame.scrollVelocity * dt
+    case 'idle':
       break
-    }
-    case 'brake': {
-      frame.scrollVelocity = 0
-      frame.scrollTarget = frame.scroll
-      break
-    }
-    case 'pointer':
-    case 'idle': {
-      // Coast to a stop so releasing a steer glides instead of stopping dead.
-      frame.scrollVelocity = approach(frame.scrollVelocity, 0, 2.4, dt)
-      if (Math.abs(frame.scrollVelocity) < 4) frame.scrollVelocity = 0
-      frame.scrollTarget += frame.scrollVelocity * dt
-      break
-    }
   }
 
-  // Discrete jump on the rising edge of a held V sign.
-  const victoryHeld = has('Victory')
-  if (victoryHeld && !victoryWasHeld && performance.now() - lastJumpAt > JUMP_REFRACTORY_MS) {
-    lastJumpAt = performance.now()
-    jumpToNextSection()
-  }
-  victoryWasHeld = victoryHeld
-
-  const clamped = clamp(frame.scrollTarget, 0, frame.maxScroll)
-  // Zero the velocity at the ends, or steering keeps winding it up against the wall
-  // and the page sits there refusing to come back.
-  if (clamped !== frame.scrollTarget) frame.scrollVelocity = 0
-  frame.scrollTarget = clamped
+  frame.scrollTarget = clamp(frame.scrollTarget, 0, frame.maxScroll)
 
   frame.mode = mode
 
@@ -314,7 +260,6 @@ export function jumpToNextSection(): void {
   const offsets = frame.sectionOffsets
   const next = offsets.find((offset) => offset > frame.scrollTarget + 24)
   frame.scrollTarget = clamp(next ?? frame.maxScroll, 0, frame.maxScroll)
-  frame.scrollVelocity = 0
 }
 
 export function jumpToPreviousSection(): void {
@@ -324,7 +269,6 @@ export function jumpToPreviousSection(): void {
     if (offset < frame.scrollTarget - 24) previous = offset
   }
   frame.scrollTarget = previous
-  frame.scrollVelocity = 0
 }
 
-export const tuning = { PINCH_CLOSE, PINCH_OPEN, STEER_DEADZONE }
+export const tuning = { PINCH_CLOSE, PINCH_OPEN }

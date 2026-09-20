@@ -12,8 +12,8 @@ const sections = [
   {
     kicker: '01 / intent',
     title: 'A page that listens to your hands.',
-    body: 'Pinch your fingers together and move your hand up or down to scroll. Hold an open palm to drift slowly. Bring two pinches apart to zoom the whole composition.',
-    accent: 'No keys. No mouse. Just spatial intent.',
+    body: 'Pinch your fingers together and move your hand up or down to scroll. Pinch with both hands and move them apart to zoom the whole composition.',
+    accent: 'Two gestures. No keys, no mouse.',
   },
   {
     kicker: '02 / motion',
@@ -41,16 +41,10 @@ function useUiStore(): UiState {
 
 function modeLabel(mode: ControlMode): string {
   switch (mode) {
-    case 'steer':
-      return 'open palm drift'
     case 'grab':
-      return 'pinch grab'
+      return 'pinch scroll'
     case 'zoom':
       return 'two-hand zoom'
-    case 'brake':
-      return 'closed fist stop'
-    case 'pointer':
-      return 'pointer'
     default:
       return 'waiting'
   }
@@ -196,7 +190,7 @@ function MotionRuntime({ contentRef }: { contentRef: React.RefObject<HTMLDivElem
       )
       const gestures = frame.hands.filter((h) => h.present).map((h) => h.gesture)
       const gesture = gestures.find((name) => name !== 'None') ?? 'None'
-      const active = frame.mode !== 'idle' && frame.mode !== 'pointer'
+      const active = frame.mode !== 'idle'
       setUi({
         handCount: frame.handCount,
         gesture,
@@ -250,14 +244,8 @@ function ControlsPanel({ onStart, onStop }: { onStart: () => void; onStop: () =>
       <div className="gesture-grid">
         <span>pinch + move up/down</span>
         <b>scroll</b>
-        <span>2 pinches</span>
+        <span>2 pinches, move apart</span>
         <b>zoom</b>
-        <span>open palm</span>
-        <b>drift</b>
-        <span>victory</span>
-        <b>next</b>
-        <span>fist</span>
-        <b>stop</b>
       </div>
       <a className="switch-link" href="#game">
         Play T-Rex with your hands →
