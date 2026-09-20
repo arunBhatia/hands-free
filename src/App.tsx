@@ -35,6 +35,9 @@ const sections = [
   },
 ]
 
+/** A deliberate hold avoids changing pages when the recognizer sees a transient V shape. */
+const VICTORY_NAVIGATION_DELAY_MS = 650
+
 function useUiStore(): UiState {
   return useSyncExternalStore(subscribeUi, getUi, getUi)
 }
@@ -139,6 +142,7 @@ function MotionRuntime({ contentRef }: { contentRef: React.RefObject<HTMLDivElem
     let last = performance.now()
     let fpsFrames = 0
     let fpsStart = last
+    let victoryStartedAt: number | null = null
 
     const measure = () => {
       const root = contentRef.current
@@ -189,11 +193,20 @@ function MotionRuntime({ contentRef }: { contentRef: React.RefObject<HTMLDivElem
         }),
       )
       const gestures = frame.hands.filter((h) => h.present).map((h) => h.gesture)
-      const gesture = gestures.find((name) => name !== 'None') ?? 'None'
+      const victory = gestures.includes('Victory')
+      if (victory) {
+        victoryStartedAt ??= now
+        if (now - victoryStartedAt >= VICTORY_NAVIGATION_DELAY_MS) {
+          victoryStartedAt = null
+          if (window.location.hash !== '#game') window.location.hash = 'game'
+        }
+      } else {
+        victoryStartedAt = null
+      }
       const active = frame.mode !== 'idle'
       setUi({
         handCount: frame.handCount,
-        gesture,
+        gesture: victory ? 'Victory' : 'None',
         mode: frame.mode,
         renderFps: frame.renderFps,
         cvFps: frame.cvFps,
@@ -246,6 +259,8 @@ function ControlsPanel({ onStart, onStop }: { onStart: () => void; onStop: () =>
         <b>scroll</b>
         <span>2 pinches, apart or together</span>
         <b>zoom</b>
+        <span>hold a victory sign ✌️</span>
+        <b>play T-Rex</b>
       </div>
       <a className="switch-link" href="#game">
         Play T-Rex with your hands →

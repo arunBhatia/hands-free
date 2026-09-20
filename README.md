@@ -28,10 +28,11 @@ MediaPipe model (~8 MB) and copies its wasm runtime into `public/` (both gitigno
 | Pinch, then move up/down              | Scroll           |
 | Pinch both hands, move them apart     | Zoom in          |
 | Pinch both hands, move them together  | Zoom out         |
+| Hold a Victory sign                   | Open T-Rex game  |
 
-Both are relative to where the pinch started, so the page follows your hands one-to-one:
+Scroll and zoom are relative to where the pinch started, so the page follows your hands one-to-one:
 zoom tracks the ratio between the two pinches, so the same gesture goes either way.
-Nothing else is bound: the demo teaches two gestures rather than a menu of them.
+Hold a Victory sign for a moment to open the T-Rex game.
 
 Until you gesture for the first time, two animated glyphs at the bottom of the page loop
 the motions — a pinching hand travelling up and down its track, and a pair of hands
