@@ -4,6 +4,7 @@ import { tuning } from '../cv/gestures'
 import { middleExtension, pinchRatio } from '../cv/landmarks'
 import { frame, type GestureName } from '../state/store'
 import { MIN_MIDDLE_EXTENSION, classifyHand } from './handPose'
+import { HandInput, isGameKey } from './input'
 import { SampleRecorder, type SampleLabel } from './recorder'
 
 interface Sample {
@@ -100,5 +101,27 @@ describe('webcam recorder', () => {
     } finally {
       Object.assign(hand, { present: false, landmarks: null })
     }
+  })
+})
+
+describe('keyboard', () => {
+  const onButton = { closest: (selector: string) => (selector.includes('button') ? {} : null) }
+  const onPage = { closest: () => null }
+
+  it('leaves Space to a focused button', () => {
+    expect(isGameKey({ code: 'Space', target: onButton as unknown as EventTarget })).toBe(false)
+    expect(isGameKey({ code: 'Space', target: onPage as unknown as EventTarget })).toBe(true)
+    expect(isGameKey({ code: 'Space', target: null })).toBe(true)
+  })
+
+  it('still takes the arrow keys anywhere', () => {
+    expect(isGameKey({ code: 'ArrowUp', target: onButton as unknown as EventTarget })).toBe(true)
+    expect(isGameKey({ code: 'ArrowDown', target: onButton as unknown as EventTarget })).toBe(true)
+    expect(isGameKey({ code: 'KeyA', target: onPage as unknown as EventTarget })).toBe(false)
+  })
+
+  it('attaches nothing while KEYBOARD_CONTROLS is off', () => {
+    // No window in this environment, so a listener would throw.
+    expect(() => new HandInput().attach()()).not.toThrow()
   })
 })

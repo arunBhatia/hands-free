@@ -1,5 +1,6 @@
 import { useEffect, useRef, useSyncExternalStore } from 'react'
 import { CameraLayer } from '../components/CameraLayer'
+import { KEYBOARD_CONTROLS } from '../config'
 import { useHandTracking } from '../cv/useHandTracking'
 import { frame, getUi, setUi, subscribeUi, type UiState } from '../state/store'
 import { HandInput } from './input'
@@ -39,6 +40,7 @@ function GameCanvas({ debugRef }: { debugRef: React.RefObject<HTMLPreElement | n
   useEffect(() => {
     const runner = new Runner(Math.random, loadHighScore())
     const input = new HandInput()
+    const detach = input.attach()
     let savedHigh = runner.highScore
     let raf = 0
     let last = performance.now()
@@ -81,8 +83,12 @@ function GameCanvas({ debugRef }: { debugRef: React.RefObject<HTMLPreElement | n
         const handsOn = getUi().status === 'running'
         draw(ctx, runner, {
           showHitboxes: getUi().showDebug,
-          startHint: handsOn ? 'pinch to start' : 'start the camera to play',
-          restartHint: 'pinch to restart',
+          startHint: handsOn
+            ? 'pinch to start'
+            : KEYBOARD_CONTROLS
+              ? 'start the camera, or press space'
+              : 'start the camera to play',
+          restartHint: handsOn || !KEYBOARD_CONTROLS ? 'pinch to restart' : 'press space to restart',
         })
       }
 
@@ -121,6 +127,7 @@ function GameCanvas({ debugRef }: { debugRef: React.RefObject<HTMLPreElement | n
 
     return () => {
       cancelAnimationFrame(raf)
+      detach()
       window.removeEventListener('keydown', onKey)
     }
   }, [debugRef])
@@ -163,6 +170,12 @@ function GamePanel({ onStart, onStop }: { onStart: () => void; onStop: () => voi
         <b>duck</b>
         <span>pinch after crash</span>
         <b>restart</b>
+        {KEYBOARD_CONTROLS ? (
+          <>
+            <span>keys</span>
+            <b>space / ↓</b>
+          </>
+        ) : null}
       </div>
       <p className="panel-note">Pinch thumb to index with your other fingers straight, like an OK sign.</p>
       <a className="switch-link" href="#">

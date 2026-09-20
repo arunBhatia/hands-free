@@ -3,6 +3,7 @@ import { Canvas, useFrame } from '@react-three/fiber'
 import { Bloom, EffectComposer, Vignette } from '@react-three/postprocessing'
 import { AdditiveBlending, Color, InstancedMesh, MathUtils, Object3D, Vector3 } from 'three'
 import { CameraLayer } from './components/CameraLayer'
+import { KEYBOARD_CONTROLS } from './config'
 import { jumpToNextSection, jumpToPreviousSection, updateControl } from './cv/gestures'
 import { useHandTracking } from './cv/useHandTracking'
 import { frame, getUi, setUi, subscribeUi, type ControlMode, type UiState } from './state/store'
@@ -157,6 +158,7 @@ function MotionRuntime({ contentRef }: { contentRef: React.RefObject<HTMLDivElem
     const onResize = () => measure()
     const onKey = (event: KeyboardEvent) => {
       if (event.key.toLowerCase() === 'd') setUi({ showDebug: !getUi().showDebug })
+      if (!KEYBOARD_CONTROLS) return
       if (event.key === 'ArrowDown') jumpToNextSection()
       if (event.key === 'ArrowUp') jumpToPreviousSection()
     }
