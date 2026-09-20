@@ -48,8 +48,10 @@ The keyboard does nothing: hands are the only way to scroll the page or play the
 
 For development without a camera, copy `.env.example` to `.env.local`, set
 `VITE_KEYBOARD_CONTROLS=true` and restart the dev server (the flag is read at build
-time). That turns on ↑/↓ to move between sections on the demo page, and space or ↑ to
-jump and ↓ to duck in the game.
+time). Each page then takes its own keys:
+
+- Demo page (`/`): ↑/↓ move between sections.
+- Game (`/#game`): space or ↑ jump, ↓ ducks.
 
 ## Scripts
 
