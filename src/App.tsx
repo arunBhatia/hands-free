@@ -291,17 +291,19 @@ function Content({ contentRef }: { contentRef: React.RefObject<HTMLDivElement | 
 }
 
 /**
- * Loops a pinch travelling down the track and back: the gesture is easier to copy from
- * a moving picture than from a sentence. Purely decorative, hence aria-hidden.
+ * Loops a pinching hand swiping down the track and back: the gesture is easier to copy
+ * from a moving picture than from a sentence. Purely decorative, hence aria-hidden.
  */
 function PinchScrollGlyph() {
   return (
-    <svg className="hint-glyph" viewBox="0 0 22 32" aria-hidden="true">
-      <path className="hint-arrow" d="M6 7 L11 2.5 L16 7" />
-      <line className="hint-track" x1="11" y1="10" x2="11" y2="22" />
-      <path className="hint-arrow" d="M6 25 L11 29.5 L16 25" />
-      <circle className="hint-pinch" cx="11" cy="10" r="3.2" />
-    </svg>
+    <span className="hint-glyph" aria-hidden="true">
+      <svg className="hint-rail" viewBox="0 0 22 34">
+        <path className="hint-arrow" d="M6 6 L11 1.5 L16 6" />
+        <line className="hint-track" x1="11" y1="9" x2="11" y2="25" />
+        <path className="hint-arrow" d="M6 28 L11 32.5 L16 28" />
+      </svg>
+      <span className="hint-pinch">🤏</span>
+    </span>
   )
 }
 
