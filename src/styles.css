@@ -318,6 +318,60 @@ h1 {
   opacity: 0;
 }
 
+.hint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hint-glyph {
+  width: 18px;
+  height: 26px;
+  flex: none;
+}
+
+.hint-track {
+  stroke: rgba(143, 255, 224, 0.35);
+  stroke-width: 1.5;
+  stroke-dasharray: 2 4;
+  stroke-linecap: round;
+}
+
+.hint-arrow {
+  fill: none;
+  stroke: rgba(143, 255, 224, 0.45);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.hint-pinch {
+  fill: #8fffe0;
+  animation: hint-pinch-drag 3.2s ease-in-out infinite;
+}
+
+/* Down the track and back, pausing at each end so the travel reads as a drag. */
+@keyframes hint-pinch-drag {
+  0%,
+  12% {
+    transform: translateY(0);
+  }
+  45%,
+  57% {
+    transform: translateY(12px);
+  }
+  90%,
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hint-pinch {
+    animation: none;
+  }
+}
+
 .switch-link {
   display: block;
   margin-top: 16px;

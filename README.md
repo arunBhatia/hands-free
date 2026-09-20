@@ -20,13 +20,17 @@ MediaPipe model (~8 MB) and copies its wasm runtime into `public/` (both gitigno
 
 ### Demo page (`/`)
 
-| Gesture   | Action                 |
-| --------- | ---------------------- |
-| Open palm | Scroll                 |
-| Pinch     | Grab the surface       |
-| 2 pinches | Zoom (move hands apart) |
-| Victory   | Next section           |
-| Fist      | Stop                   |
+| Gesture                | Action                  |
+| ---------------------- | ----------------------- |
+| Pinch, then move up/down | Scroll                |
+| 2 pinches              | Zoom (move hands apart) |
+| Open palm              | Drift slowly            |
+| Victory                | Next section            |
+| Fist                   | Stop                    |
+
+Pinch-and-drag is the reliable way to scroll: the page follows your hand one-to-one.
+Open-palm drift steers by how far your hand sits from the middle of the frame, which is
+harder to aim.
 
 ### T-Rex game (`/#game`)
 

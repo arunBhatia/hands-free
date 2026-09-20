@@ -12,7 +12,7 @@ const sections = [
   {
     kicker: '01 / intent',
     title: 'A page that listens to your hands.',
-    body: 'Open your palm to drift through the story. Pinch to grab the surface. Bring two pinches apart to zoom the whole composition.',
+    body: 'Pinch your fingers together and move your hand up or down to scroll. Hold an open palm to drift slowly. Bring two pinches apart to zoom the whole composition.',
     accent: 'No keys. No mouse. Just spatial intent.',
   },
   {
@@ -42,7 +42,7 @@ function useUiStore(): UiState {
 function modeLabel(mode: ControlMode): string {
   switch (mode) {
     case 'steer':
-      return 'open palm scroll'
+      return 'open palm drift'
     case 'grab':
       return 'pinch grab'
     case 'zoom':
@@ -248,12 +248,12 @@ function ControlsPanel({ onStart, onStop }: { onStart: () => void; onStop: () =>
         </div>
       ) : null}
       <div className="gesture-grid">
-        <span>palm</span>
+        <span>pinch + move up/down</span>
         <b>scroll</b>
-        <span>pinch</span>
-        <b>grab</b>
         <span>2 pinches</span>
         <b>zoom</b>
+        <span>open palm</span>
+        <b>drift</b>
         <span>victory</span>
         <b>next</b>
         <span>fist</span>
@@ -302,6 +302,21 @@ function Content({ contentRef }: { contentRef: React.RefObject<HTMLDivElement | 
   )
 }
 
+/**
+ * Loops a pinch travelling down the track and back: the gesture is easier to copy from
+ * a moving picture than from a sentence. Purely decorative, hence aria-hidden.
+ */
+function PinchScrollGlyph() {
+  return (
+    <svg className="hint-glyph" viewBox="0 0 22 32" aria-hidden="true">
+      <path className="hint-arrow" d="M6 7 L11 2.5 L16 7" />
+      <line className="hint-track" x1="11" y1="10" x2="11" y2="22" />
+      <path className="hint-arrow" d="M6 25 L11 29.5 L16 25" />
+      <circle className="hint-pinch" cx="11" cy="10" r="3.2" />
+    </svg>
+  )
+}
+
 export default function App() {
   const ui = useUiStore()
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -317,7 +332,8 @@ export default function App() {
       <ControlsPanel onStart={start} onStop={stop} />
       <DebugPanel />
       <div className={ui.hasGestured ? 'hint hidden' : 'hint'}>
-        <span>Raise an open palm to start moving.</span>
+        <PinchScrollGlyph />
+        <span>Pinch your fingers, then move your hand up or down to scroll.</span>
       </div>
     </>
   )
