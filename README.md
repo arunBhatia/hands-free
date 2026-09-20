@@ -20,13 +20,19 @@ MediaPipe model (~8 MB) and copies its wasm runtime into `public/` (both gitigno
 
 ### Demo page (`/`)
 
-| Gesture                        | Action |
-| ------------------------------ | ------ |
-| Pinch, then move up/down       | Scroll |
-| Pinch both hands, move apart   | Zoom   |
+| Gesture                               | Action           |
+| ------------------------------------- | ---------------- |
+| Pinch, then move up/down              | Scroll           |
+| Pinch both hands, move them apart     | Zoom in          |
+| Pinch both hands, move them together  | Zoom out         |
 
-Both are relative to where the pinch started, so the page follows your hands one-to-one.
+Both are relative to where the pinch started, so the page follows your hands one-to-one:
+zoom tracks the ratio between the two pinches, so the same gesture goes either way.
 Nothing else is bound: the demo teaches two gestures rather than a menu of them.
+
+Until you gesture for the first time, two animated glyphs at the bottom of the page loop
+the motions — a pinching hand travelling up and down its track, and a pair of hands
+opening and closing between chevrons that light up in the direction currently being shown.
 
 ### T-Rex game (`/#game`)
 
