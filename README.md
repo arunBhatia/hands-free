@@ -34,9 +34,9 @@ Scroll and zoom are relative to where the pinch started, so the page follows you
 zoom tracks the ratio between the two pinches, so the same gesture goes either way.
 Hold a Victory sign for a moment to open the T-Rex game.
 
-Until you gesture for the first time, two animated glyphs at the bottom of the page loop
-the motions — a pinching hand travelling up and down its track, and a pair of hands
-opening and closing between chevrons that light up in the direction currently being shown.
+Two animated glyphs stay fixed at the bottom of the screen while you interact — a pinching
+hand travelling up and down its track, and a pair of hands opening and closing between
+chevrons that light up in the direction currently being shown.
 
 ### T-Rex game (`/#game`)
 
