@@ -312,10 +312,6 @@ h1 {
   pointer-events: none;
 }
 
-.hint.hidden {
-  opacity: 0;
-}
-
 .hint-glyph {
   display: block;
   position: relative;

@@ -111,8 +111,6 @@ export interface UiState {
   /** Index of the section currently filling the viewport. */
   section: number
   showDebug: boolean
-  /** True once the user has driven anything with a gesture — used to retire the hint. */
-  hasGestured: boolean
 }
 
 let uiState: UiState = {
@@ -127,7 +125,6 @@ let uiState: UiState = {
   cvFps: 0,
   section: 0,
   showDebug: false,
-  hasGestured: false,
 }
 
 const listeners = new Set<() => void>()

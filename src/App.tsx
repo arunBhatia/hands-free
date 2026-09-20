@@ -203,7 +203,6 @@ function MotionRuntime({ contentRef }: { contentRef: React.RefObject<HTMLDivElem
       } else {
         victoryStartedAt = null
       }
-      const active = frame.mode !== 'idle'
       setUi({
         handCount: frame.handCount,
         gesture: victory ? 'Victory' : 'None',
@@ -211,7 +210,6 @@ function MotionRuntime({ contentRef }: { contentRef: React.RefObject<HTMLDivElem
         renderFps: frame.renderFps,
         cvFps: frame.cvFps,
         section,
-        hasGestured: getUi().hasGestured || active,
       })
 
       raf = requestAnimationFrame(tick)
@@ -354,7 +352,6 @@ function PinchZoomGlyph() {
 }
 
 export default function App() {
-  const ui = useUiStore()
   const videoRef = useRef<HTMLVideoElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
   const { start, stop } = useHandTracking(videoRef)
@@ -367,7 +364,7 @@ export default function App() {
       <CameraLayer videoRef={videoRef} />
       <ControlsPanel onStart={start} onStop={stop} />
       <DebugPanel />
-      <div className={ui.hasGestured ? 'hint hidden' : 'hint'}>
+      <div className="hint">
         <PinchScrollGlyph />
         <PinchZoomGlyph />
       </div>
