@@ -305,6 +305,9 @@ h1 {
   left: 50%;
   bottom: 34px;
   transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 26px;
   transition: opacity 300ms ease;
   pointer-events: none;
 }
@@ -316,8 +319,16 @@ h1 {
 .hint-glyph {
   display: block;
   position: relative;
+}
+
+.hint-glyph-scroll {
   width: 24px;
   height: 48px;
+}
+
+.hint-glyph-zoom {
+  width: 76px;
+  height: 24px;
 }
 
 .hint-rail {
@@ -342,17 +353,44 @@ h1 {
   stroke-linejoin: round;
 }
 
+/* Both directions stay drawn at all times; the pulse only says which one the hands are
+   doing right now. Dimmed rather than hidden, so a paused loop still shows the pair. */
+.hint-arrow-out {
+  animation: hint-arrow-out-pulse 3.2s ease-in-out infinite;
+}
+
+.hint-arrow-in {
+  animation: hint-arrow-in-pulse 3.2s ease-in-out infinite;
+}
+
 .hint-pinch {
   position: absolute;
+  left: 50%;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.hint-glyph-scroll .hint-pinch {
   /* Box runs 9..25 here and 22..38 at the far end, so it never reaches either
      chevron (0.5..5 and 43..47.5). See hint-pinch-drag. */
   top: 9px;
-  left: 50%;
   /* Nudged left of centre: the hand sits right of the emoji box's middle. */
   margin-left: -11px;
-  font-size: 16px;
-  line-height: 1;
   animation: hint-pinch-drag 3.2s ease-in-out infinite;
+}
+
+/* The pair starts just short of touching and opens by 7px each, so the boxes travel
+   21..37 -> 14..30 and 39..55 -> 46..62: the full width of the track, chevrons clear. */
+.hint-pinch-left {
+  top: 4px;
+  margin-left: -17px;
+  animation: hint-pinch-spread-left 3.2s ease-in-out infinite;
+}
+
+.hint-pinch-right {
+  top: 4px;
+  margin-left: 1px;
+  animation: hint-pinch-spread-right 3.2s ease-in-out infinite;
 }
 
 /* Down the track and back, pausing at each end so the travel reads as a drag. */
@@ -371,9 +409,84 @@ h1 {
   }
 }
 
+/* Mirrored so the two hands face each other; the flip also turns a positive translate
+   into outward travel, which keeps both halves of the gesture on one set of numbers. */
+@keyframes hint-pinch-spread-left {
+  0%,
+  12% {
+    transform: scaleX(-1) translateX(0);
+  }
+  45%,
+  57% {
+    transform: scaleX(-1) translateX(7px);
+  }
+  90%,
+  100% {
+    transform: scaleX(-1) translateX(0);
+  }
+}
+
+@keyframes hint-pinch-spread-right {
+  0%,
+  12% {
+    transform: translateX(0);
+  }
+  45%,
+  57% {
+    transform: translateX(7px);
+  }
+  90%,
+  100% {
+    transform: translateX(0);
+  }
+}
+
+/* Timed against hint-pinch-spread-*: the hands open over 12..45% and close over 57..90%. */
+@keyframes hint-arrow-out-pulse {
+  0%,
+  12% {
+    opacity: 0.4;
+  }
+  30%,
+  50% {
+    opacity: 1;
+  }
+  66%,
+  100% {
+    opacity: 0.4;
+  }
+}
+
+@keyframes hint-arrow-in-pulse {
+  0%,
+  57% {
+    opacity: 0.4;
+  }
+  75%,
+  95% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.4;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hint-pinch {
     animation: none;
+  }
+
+  /* No pulse to carry the meaning, so both chevron pairs sit at full strength. */
+  .hint-arrow-out,
+  .hint-arrow-in {
+    animation: none;
+    opacity: 1;
+  }
+
+  /* The flip is what makes the pair read as two hands, so it has to survive the
+     animation being dropped. */
+  .hint-pinch-left {
+    transform: scaleX(-1);
   }
 }
 

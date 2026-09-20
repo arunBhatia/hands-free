@@ -244,7 +244,7 @@ function ControlsPanel({ onStart, onStop }: { onStart: () => void; onStop: () =>
       <div className="gesture-grid">
         <span>pinch + move up/down</span>
         <b>scroll</b>
-        <span>2 pinches, move apart</span>
+        <span>2 pinches, apart or together</span>
         <b>zoom</b>
       </div>
       <a className="switch-link" href="#game">
@@ -297,13 +297,43 @@ function Content({ contentRef }: { contentRef: React.RefObject<HTMLDivElement | 
  */
 function PinchScrollGlyph() {
   return (
-    <span className="hint-glyph">
+    <span className="hint-glyph hint-glyph-scroll" role="img" aria-label="Pinch your fingers and move your hand up or down to scroll">
       <svg className="hint-rail" viewBox="0 0 24 48" aria-hidden="true">
         <path className="hint-arrow" d="M7 5 L12 0.5 L17 5" />
         <line className="hint-track" x1="12" y1="8" x2="12" y2="40" />
         <path className="hint-arrow" d="M7 43 L12 47.5 L17 43" />
       </svg>
       <span className="hint-pinch">🤏</span>
+    </span>
+  )
+}
+
+/**
+ * The same idea turned on its side for zoom: two pinching hands that drift apart along a
+ * horizontal track and come back together. They share one keyframe timeline so the pull
+ * always reads as a single two-handed gesture rather than two hands acting alone.
+ *
+ * Zoom runs on the ratio between the two pinches, so apart and together are equally real
+ * controls. Each end therefore carries a chevron pointing out and one pointing in, and
+ * each pair brightens on the half of the loop it describes — outward while the hands
+ * spread, inward while they close — so the glyph teaches both directions, not just one.
+ */
+function PinchZoomGlyph() {
+  return (
+    <span
+      className="hint-glyph hint-glyph-zoom"
+      role="img"
+      aria-label="Pinch with both hands and move them apart to zoom in, or together to zoom out"
+    >
+      <svg className="hint-rail" viewBox="0 0 76 24" aria-hidden="true">
+        <path className="hint-arrow hint-arrow-out" d="M5 7 L0.5 12 L5 17" />
+        <path className="hint-arrow hint-arrow-in" d="M8.5 7 L13 12 L8.5 17" />
+        <line className="hint-track" x1="16" y1="12" x2="60" y2="12" />
+        <path className="hint-arrow hint-arrow-in" d="M67.5 7 L63 12 L67.5 17" />
+        <path className="hint-arrow hint-arrow-out" d="M71 7 L75.5 12 L71 17" />
+      </svg>
+      <span className="hint-pinch hint-pinch-left">🤏</span>
+      <span className="hint-pinch hint-pinch-right">🤏</span>
     </span>
   )
 }
@@ -322,12 +352,9 @@ export default function App() {
       <CameraLayer videoRef={videoRef} />
       <ControlsPanel onStart={start} onStop={stop} />
       <DebugPanel />
-      <div
-        className={ui.hasGestured ? 'hint hidden' : 'hint'}
-        role="img"
-        aria-label="Pinch your fingers and move your hand up or down to scroll"
-      >
+      <div className={ui.hasGestured ? 'hint hidden' : 'hint'}>
         <PinchScrollGlyph />
+        <PinchZoomGlyph />
       </div>
     </>
   )
