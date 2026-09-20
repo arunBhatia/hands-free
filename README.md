@@ -4,6 +4,9 @@ A web page you control with your hands. Your webcam feeds MediaPipe's hand-gestu
 model in the browser, and the gestures drive a three.js scene and a T-Rex runner game.
 No video leaves your machine.
 
+Live at **https://www.handfree.live/** — it needs a webcam and a browser with
+WebAssembly, and the model is fetched on first use.
+
 ## Run it
 
 Requires Node 22+ and a webcam.
