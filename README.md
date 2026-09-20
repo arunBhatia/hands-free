@@ -42,12 +42,14 @@ and run under the high ones.
 
 Press **D** on either page for the debug panel.
 
-## Keyboard fallbacks
+## Keyboard fallbacks (off)
 
-Hands are the only way to play by default. To work on the page or the game without a
-camera, copy `.env.example` to `.env.local` and set `VITE_KEYBOARD_CONTROLS=true`. That
-turns on ↑/↓ to move between sections on the demo page, and space or ↑ to jump and ↓ to
-duck in the game.
+The keyboard does nothing: hands are the only way to scroll the page or play the game.
+
+For development without a camera, copy `.env.example` to `.env.local`, set
+`VITE_KEYBOARD_CONTROLS=true` and restart the dev server (the flag is read at build
+time). That turns on ↑/↓ to move between sections on the demo page, and space or ↑ to
+jump and ↓ to duck in the game.
 
 ## Scripts
 
