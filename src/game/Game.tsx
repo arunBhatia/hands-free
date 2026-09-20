@@ -172,8 +172,10 @@ function GamePanel({ onStart, onStop }: { onStart: () => void; onStop: () => voi
         <b>restart</b>
         {KEYBOARD_CONTROLS ? (
           <>
-            <span>keys</span>
-            <b>space / ↓</b>
+            <span>space / ↑</span>
+            <b>jump</b>
+            <span>↓</span>
+            <b>duck</b>
           </>
         ) : null}
       </div>
