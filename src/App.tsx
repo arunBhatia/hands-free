@@ -291,16 +291,17 @@ function Content({ contentRef }: { contentRef: React.RefObject<HTMLDivElement | 
 }
 
 /**
- * Loops a pinching hand swiping down the track and back: the gesture is easier to copy
- * from a moving picture than from a sentence. Purely decorative, hence aria-hidden.
+ * Loops a pinching hand swiping down the track and back. It replaces the sentence that
+ * used to sit here: a moving picture of the gesture is quicker to read than a line of
+ * copy, and it leaves the page uncluttered. The label lives on the wrapper.
  */
 function PinchScrollGlyph() {
   return (
-    <span className="hint-glyph" aria-hidden="true">
-      <svg className="hint-rail" viewBox="0 0 22 34">
-        <path className="hint-arrow" d="M6 6 L11 1.5 L16 6" />
-        <line className="hint-track" x1="11" y1="9" x2="11" y2="25" />
-        <path className="hint-arrow" d="M6 28 L11 32.5 L16 28" />
+    <span className="hint-glyph">
+      <svg className="hint-rail" viewBox="0 0 24 48" aria-hidden="true">
+        <path className="hint-arrow" d="M7 5 L12 0.5 L17 5" />
+        <line className="hint-track" x1="12" y1="8" x2="12" y2="40" />
+        <path className="hint-arrow" d="M7 43 L12 47.5 L17 43" />
       </svg>
       <span className="hint-pinch">🤏</span>
     </span>
@@ -321,9 +322,12 @@ export default function App() {
       <CameraLayer videoRef={videoRef} />
       <ControlsPanel onStart={start} onStop={stop} />
       <DebugPanel />
-      <div className={ui.hasGestured ? 'hint hidden' : 'hint'}>
+      <div
+        className={ui.hasGestured ? 'hint hidden' : 'hint'}
+        role="img"
+        aria-label="Pinch your fingers and move your hand up or down to scroll"
+      >
         <PinchScrollGlyph />
-        <span>Pinch your fingers, then move your hand up or down to scroll.</span>
       </div>
     </>
   )

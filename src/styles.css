@@ -305,11 +305,6 @@ h1 {
   left: 50%;
   bottom: 34px;
   transform: translateX(-50%);
-  padding: 9px 13px;
-  border-radius: 6px;
-  color: rgba(251, 255, 248, 0.9);
-  background: rgba(5, 6, 10, 0.78);
-  font-size: 14px;
   transition: opacity 300ms ease;
   pointer-events: none;
 }
@@ -318,17 +313,11 @@ h1 {
   opacity: 0;
 }
 
-.hint {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
 .hint-glyph {
+  display: block;
   position: relative;
-  width: 22px;
-  height: 34px;
-  flex: none;
+  width: 24px;
+  height: 48px;
 }
 
 .hint-rail {
@@ -355,10 +344,13 @@ h1 {
 
 .hint-pinch {
   position: absolute;
-  top: 6px;
+  /* Box runs 9..25 here and 22..38 at the far end, so it never reaches either
+     chevron (0.5..5 and 43..47.5). See hint-pinch-drag. */
+  top: 9px;
   left: 50%;
-  margin-left: -6.5px;
-  font-size: 13px;
+  /* Nudged left of centre: the hand sits right of the emoji box's middle. */
+  margin-left: -11px;
+  font-size: 16px;
   line-height: 1;
   animation: hint-pinch-drag 3.2s ease-in-out infinite;
 }
