@@ -19,12 +19,12 @@ export function PromoBar() {
         <span className="promo-emoji" aria-hidden="true">
           ✨
         </span>
+        Built with <b>offrun.dev</b>
         <svg className="promo-external" viewBox="0 0 12 12" aria-hidden="true">
           <path d="M5 7 L10.5 1.5" />
           <path d="M7 1.5 H10.5 V5" />
           <path d="M9 7 V10.5 H1.5 V3 H5" />
         </svg>
-        built with <b>offrun.dev</b>
       </span>
     </a>
   )
