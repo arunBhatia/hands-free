@@ -339,7 +339,9 @@ h1 {
   right: 28px;
   bottom: 28px;
   width: 304px;
-  aspect-ratio: 16 / 10;
+  /* Camera capture is requested at 640×480. Keep the preview at 4:3 so people are
+     shown at their natural proportions instead of being stretched into the panel. */
+  aspect-ratio: 4 / 3;
   overflow: hidden;
   border: 1px solid rgba(243, 246, 239, 0.18);
   border-radius: 8px;
