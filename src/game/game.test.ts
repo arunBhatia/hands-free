@@ -129,6 +129,21 @@ describe('collision', () => {
   })
 })
 
+describe('gesture reaction budget', () => {
+  /** The tightest gap the field can roll for a single small cactus, in ms of travel. */
+  const clearMsAt = (speed: number) =>
+    (new Obstacle(spec('cactusSmall'), 1, speed, () => 0).gap / speed) * STEP_MS
+
+  it('leaves a hand enough clear ground between obstacles', () => {
+    // A pinch reaches the game ~80-130 ms after the hand moves, and re-arming a jump
+    // means opening past the hysteresis band and closing again. Below roughly 0.9 s at
+    // the starting speed the run stops being playable by gesture at all — which is what
+    // GESTURE_REACTION_FRAMES buys back, and why it is the knob to move, not the speed.
+    expect(clearMsAt(START_SPEED)).toBeGreaterThan(900)
+    expect(clearMsAt(MAX_SPEED)).toBeGreaterThan(700)
+  })
+})
+
 describe('runner', () => {
   it('starts on the first press with a jump', () => {
     const runner = new Runner(() => 0.5)

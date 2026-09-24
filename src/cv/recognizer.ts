@@ -93,12 +93,20 @@ export async function createRecogniser(
   }
 }
 
+/**
+ * 480p at 60 fps, not 720p at 30.
+ *
+ * The model resizes to 192x192 internally, so 720p buys no accuracy at desk distance and
+ * costs decode and GPU-upload time on every frame. The frame rate is what players feel:
+ * where the webcam can do 60, capture latency halves (33 ms -> 16.7 ms). Both are `ideal`,
+ * so a camera that cannot manage either still opens at whatever it has.
+ */
 export async function openCamera(video: HTMLVideoElement): Promise<MediaStream> {
   const stream = await navigator.mediaDevices.getUserMedia({
     video: {
-      width: { ideal: 1280 },
-      height: { ideal: 720 },
-      frameRate: { ideal: 30, max: 30 },
+      width: { ideal: 640 },
+      height: { ideal: 480 },
+      frameRate: { ideal: 60, max: 60 },
       facingMode: 'user',
     },
     audio: false,

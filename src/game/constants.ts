@@ -7,7 +7,7 @@
 // found at https://chromium.googlesource.com/chromium/src/+/main/LICENSE
 
 /** Logical canvas size. Everything below is in these pixels; the view scales it up. */
-export const WIDTH = 600
+export const WIDTH = 800
 export const HEIGHT = 150
 export const BOTTOM_PAD = 10
 
@@ -17,9 +17,10 @@ export const STEP_MS = 1000 / FPS
 
 /**
  * Speed comes from Chrome's slow mode (offline.ts `slowModeConfig`) rather than the
- * default. A gesture reaches the game roughly 100 ms after the hand moves — camera
+ * default. A gesture reaches the game roughly 80-130 ms after the hand moves — camera
  * exposure, inference and pinch hysteresis — and at Chrome's normal pace that lag
- * alone costs the jump.
+ * alone costs the jump. What is left after the input path was cut back (immediate fist,
+ * 60 fps capture) is absorbed by the gap allowance below, not by slowing the run down.
  */
 export const START_SPEED = 4.2
 export const MAX_SPEED = 9
@@ -31,15 +32,23 @@ export const MAX_GAP_COEFFICIENT = 1.5
  * Extra clear ground after every obstacle, in frames of travel. A keyboard can re-jump
  * the instant the dino lands; a hand has to open the pinch past the hysteresis band and
  * close it again, which takes a few frames Chrome's gap formula never budgeted for.
+ *
+ * 22 frames, up from 12: the pipeline lag is real and this is the knob that pays for it
+ * without making the game look slower. After a small cactus at START_SPEED the next
+ * obstacle is now 236 px away — 0.94 s of clear ground, against 0.77 s at 12 frames.
+ * This is the first thing to raise if play still feels tight.
  */
-export const GESTURE_REACTION_FRAMES = 12
+export const GESTURE_REACTION_FRAMES = 22
 
 /** No obstacles for this long after the start, so the first one is never a surprise. */
 export const CLEAR_TIME_MS = 3000
 /** Restart is ignored for this long after a crash, so the fatal pinch does not restart. */
 export const GAME_OVER_CLEAR_MS = 1200
-/** A jump pressed this close before landing fires on landing instead of being lost. */
-export const JUMP_BUFFER_MS = 150
+/**
+ * A jump pressed this close before landing fires on landing instead of being lost.
+ * 220 ms covers a pinch that arrives one whole pipeline's worth of lag early.
+ */
+export const JUMP_BUFFER_MS = 220
 
 export const MAX_OBSTACLE_LENGTH = 3
 export const MAX_OBSTACLE_DUPLICATION = 2
