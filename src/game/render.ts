@@ -156,7 +156,7 @@ function drawHitboxes(ctx: CanvasRenderingContext2D, runner: Runner): void {
   }
 }
 
-/** Draws the runner into a canvas sized in device pixels, scaling the 600×150 world to fit. */
+/** Draws the runner into a canvas sized in device pixels, scaling the 800×150 world to fit. */
 export function draw(
   ctx: CanvasRenderingContext2D,
   runner: Runner,

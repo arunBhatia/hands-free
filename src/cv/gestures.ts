@@ -19,10 +19,20 @@ import { frame, type ControlMode, type GestureName } from '../state/store'
  * see live values and adjust. The two pinch constants are the ones most likely to need it.
  */
 
-/** Pinch ratio below this closes the pinch… */
-const PINCH_CLOSE = 0.4
-/** …and it only reopens above this. The gap is deliberate: a single threshold chatters. */
-const PINCH_OPEN = 0.55
+/**
+ * Pinch ratio below this closes the pinch…
+ *
+ * 0.45 rather than the 0.4 this started at: on the recorded hands in game/fixtures/ real
+ * pinches read 0.02-0.13 and the nearest non-pinch (a half-curled grip) 0.57, so the
+ * threshold can sit higher and still keep 0.12 of clearance. A pinch that closes a frame
+ * earlier is a jump that fires a frame earlier.
+ */
+const PINCH_CLOSE = 0.45
+/**
+ * …and it only reopens above this. The gap is deliberate: a single threshold chatters.
+ * Narrower than it was (0.13, not 0.15) so re-arming for a second jump is quicker.
+ */
+const PINCH_OPEN = 0.58
 
 const GESTURE_WINDOW = 5
 const GESTURE_QUORUM = 3
@@ -94,6 +104,7 @@ let cvWindowStart = 0
  * nothing here depends on which is which.)
  */
 export function ingest(result: GestureRecognizerResult, timestamp: number): void {
+  frame.lastFrameAt = timestamp
   cvFrameCount++
   if (cvWindowStart === 0) cvWindowStart = timestamp
   else if (timestamp - cvWindowStart >= 500) {

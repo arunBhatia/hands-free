@@ -86,6 +86,12 @@ export const frame = {
 
   renderFps: 0,
   cvFps: 0,
+  /**
+   * performance.now() of the most recent camera frame ingested. `now - lastFrameAt` in
+   * the game loop is how old the hand data being acted on is — the debug panel shows it,
+   * which is what turns "it feels laggy" into a number worth tuning against.
+   */
+  lastFrameAt: 0,
 }
 
 export type Frame = typeof frame

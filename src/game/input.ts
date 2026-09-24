@@ -8,11 +8,20 @@ export interface InputDebug {
   middleExtension: number
   pinching: boolean
   fist: boolean
-  /** Pinches rejected by the fist guard since the page opened. */
+  /** Pinch-shaped hands the guard took as fists rather than jumps, since the page opened. */
   guarded: number
 }
 
 const INTERACTIVE = 'button, a[href], input, textarea, select, summary, [contenteditable="true"]'
+
+/**
+ * How long a geometrically-read fist (see PoseReading.guarded) must hold before it ducks.
+ *
+ * It is read per frame with no voting, so a hand passing through a fist shape on its way
+ * somewhere else would otherwise reach trex.setSpeedDrop() and slam a jump into the ground.
+ * ~3 camera frames at 60 fps, and still far quicker than the 100-166 ms the voted label costs.
+ */
+const FIST_HOLD_MS = 50
 
 /**
  * Whether the game should take this key. Only ever consulted when KEYBOARD_CONTROLS
@@ -32,11 +41,14 @@ export function isGameKey(event: Pick<KeyboardEvent, 'code' | 'target'>): boolea
  *
  * Jump reads the pinch state straight from ingest(), which sets it from the raw pinch
  * ratio with hysteresis and no voting window — it is the lowest-latency signal we have.
- * Duck reads the voted gesture label: slower to confirm, but it is held, not tapped.
+ * Duck takes whichever arrives first: the fist shape after FIST_HOLD_MS, or the voted
+ * Closed_Fist label, which needs no extra debounce because voting already is one.
  */
 export class HandInput {
   private wasPinching = false
   private wasGuarded = false
+  /** When the current run of geometric fist frames began; null when there is none. */
+  private fistSince: number | null = null
   private keyJump = false
   private keyJumpPressed = false
   private keyDuck = false
@@ -75,26 +87,33 @@ export class HandInput {
     }
   }
 
-  poll(): GameInput {
+  /** `now` is injectable so the fist hold can be tested without a real clock. */
+  poll(now: number = performance.now()): GameInput {
     let pinching = false
-    let fist = false
-    let guarded = false
+    let votedFist = false
+    let shapedFist = false
     let closest = { pinchRatio: 1, middleExtension: 0 }
 
     for (const hand of frame.hands) {
       if (!hand.present) continue
       const reading = classifyHand(hand.landmarks, hand.pinching, hand.gesture)
       if (reading.pose === 'pinch') pinching = true
-      if (reading.pose === 'fist') fist = true
-      if (reading.guarded) guarded = true
+      if (reading.pose === 'fist') {
+        if (reading.guarded) shapedFist = true
+        else votedFist = true
+      }
       if (reading.pinchRatio < closest.pinchRatio) closest = reading
     }
+
+    if (!shapedFist) this.fistSince = null
+    else if (this.fistSince === null) this.fistSince = now
+    const fist = votedFist || (this.fistSince !== null && now - this.fistSince >= FIST_HOLD_MS)
 
     // Rising edge only: holding a pinch is holding the jump button, not mashing it.
     const pinchPressed = pinching && !this.wasPinching
     this.wasPinching = pinching
-    if (guarded && !this.wasGuarded) this.debug.guarded++
-    this.wasGuarded = guarded
+    if (shapedFist && !this.wasGuarded) this.debug.guarded++
+    this.wasGuarded = shapedFist
 
     const input: GameInput = {
       jumpPressed: pinchPressed || this.keyJumpPressed,

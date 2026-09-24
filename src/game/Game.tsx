@@ -115,6 +115,8 @@ function GameCanvas({ debugRef }: { debugRef: React.RefObject<HTMLPreElement | n
           d.pinching ? 'JUMP' : d.fist ? 'DUCK' : 'run',
           `speed ${runner.speed.toFixed(2)}`,
           `cv ${frame.cvFps} fps`,
+          // How stale the hand data this frame acted on is: capture + inference + poll.
+          `age ${frame.lastFrameAt ? `${Math.round(now - frame.lastFrameAt)}ms` : '-'}`,
           `render ${frame.renderFps} fps`,
           `delegate ${getUi().delegate || '-'}`,
           `rec pinch ${recorder.count('pinch')} fist ${recorder.count('fist')} other ${recorder.count('other')} (P/F/O, S saves)`,

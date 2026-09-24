@@ -6,8 +6,10 @@ import type { GestureName } from '../state/store'
  * A pinch only counts as a jump while the middle finger is straight — the OK-sign pinch.
  *
  * Why the guard exists: on MediaPipe's own fist photo the thumb rests on the curled index
- * finger and pinchRatio() reads 0.16, far inside the 0.4 pinch threshold. Without this
- * check every fist would be a jump.
+ * finger and pinchRatio() reads 0.16, far inside the pinch threshold. Without this check
+ * every fist would be a jump. A hand that trips the guard is a fist, and is reported as
+ * one straight away — waiting for the classifier's voted Closed_Fist label costs 100-166 ms
+ * on a duck, which is most of the lag players feel.
  *
  * Why 1.4, measured on the real hands in fixtures/ (photos run through this app's model):
  *   real pinches (7 OK signs)        middle 1.76–2.01, pinch ratio 0.02–0.13
@@ -25,7 +27,10 @@ export interface PoseReading {
   pose: HandPose
   pinchRatio: number
   middleExtension: number
-  /** Pinch-shaped, but rejected because the middle finger was curled. */
+  /**
+   * Pinch-shaped, but the middle finger was curled: a fist, read from geometry alone
+   * rather than from the voted label. Callers debounce this — see FIST_HOLD_MS.
+   */
   guarded: boolean
 }
 
@@ -46,7 +51,7 @@ export function classifyHand(
 
   let pose: HandPose = 'none'
   if (pinching && !guarded) pose = 'pinch'
-  else if (gesture === 'Closed_Fist') pose = 'fist'
+  else if (guarded || gesture === 'Closed_Fist') pose = 'fist'
 
   return { pose, pinchRatio: ratio, middleExtension: extension, guarded }
 }

@@ -55,15 +55,18 @@ describe('fist vs pinch, on real recorded hands', () => {
       expect(pinchingFor(sample.landmarks), name(sample)).toBe(true)
       const reading = classifyHand(sample.landmarks, true, sample.gesture)
       expect(reading.pose, name(sample)).not.toBe('pinch')
-      // Before the voted label arrives it must still not jump.
-      expect(classifyHand(sample.landmarks, true, 'None').pose, name(sample)).toBe('none')
+      // And it ducks on the shape alone: waiting for the voted Closed_Fist label is
+      // where most of the duck latency used to go.
+      expect(classifyHand(sample.landmarks, true, 'None').pose, name(sample)).toBe('fist')
     }
   })
 
-  it('never jumps on any other real hand', () => {
+  it('neither jumps nor ducks on any other real hand', () => {
     for (const sample of byLabel('other')) {
       const reading = classifyHand(sample.landmarks, pinchingFor(sample.landmarks), sample.gesture)
-      expect(reading.pose, name(sample)).not.toBe('pinch')
+      // Not merely 'not a pinch': now that a guarded pinch ducks, a curled non-fist
+      // (pointing, thumbs up) drifting into the fist path would drop the dino mid-jump.
+      expect(reading.pose, name(sample)).toBe('none')
     }
   })
 
@@ -82,6 +85,74 @@ describe('fist vs pinch, on real recorded hands', () => {
 
   it('treats a missing hand as neither', () => {
     expect(classifyHand(null, false, 'None').pose).toBe('none')
+  })
+})
+
+describe('duck input', () => {
+  const fistSample = byLabel('fist')[0]
+  const pinchSample = byLabel('pinch')[0]
+
+  /** Puts one hand in the shared frame for the body of a test, then clears it. */
+  function withHand(
+    sample: Sample,
+    pinching: boolean,
+    gesture: GestureName,
+    body: (input: HandInput) => void,
+  ) {
+    const hand = frame.hands[0]
+    Object.assign(hand, { present: true, landmarks: sample.landmarks, pinching, gesture })
+    try {
+      body(new HandInput())
+    } finally {
+      Object.assign(hand, { present: false, landmarks: null, pinching: false, gesture: 'None' })
+    }
+  }
+
+  it('ducks on the fist shape after a short hold, with no voted label', () => {
+    withHand(fistSample, true, 'None', (input) => {
+      // The hold is there so a hand passing through a fist shape cannot drop a jump,
+      // but it has to be short enough to beat the ~100-166 ms the vote would cost.
+      expect(input.poll(0).duck).toBe(false)
+      expect(input.poll(30).duck).toBe(false)
+      expect(input.poll(50).duck).toBe(true)
+      expect(input.poll(200).duck).toBe(true)
+    })
+  })
+
+  it('takes a voted Closed_Fist immediately — voting is already the debounce', () => {
+    withHand(fistSample, false, 'Closed_Fist', (input) => {
+      expect(input.poll(0).duck).toBe(true)
+    })
+  })
+
+  it('forgets the hold as soon as the fist opens', () => {
+    const hand = frame.hands[0]
+    const input = new HandInput()
+    try {
+      Object.assign(hand, {
+        present: true,
+        landmarks: fistSample.landmarks,
+        pinching: true,
+        gesture: 'None',
+      })
+      expect(input.poll(0).duck).toBe(false)
+      // A flicker of fist, then an open hand: the hold restarts rather than carrying on.
+      Object.assign(hand, { landmarks: pinchSample.landmarks, pinching: false })
+      expect(input.poll(30).duck).toBe(false)
+      Object.assign(hand, { landmarks: fistSample.landmarks, pinching: true })
+      expect(input.poll(60).duck).toBe(false)
+      expect(input.poll(110).duck).toBe(true)
+    } finally {
+      Object.assign(hand, { present: false, landmarks: null, pinching: false, gesture: 'None' })
+    }
+  })
+
+  it('never ducks while the hand is pinching — a jump outranks it', () => {
+    withHand(pinchSample, true, 'Closed_Fist', (input) => {
+      const held = input.poll(0)
+      expect(held.jumpPressed).toBe(true)
+      expect(held.duck).toBe(false)
+    })
   })
 })
 
